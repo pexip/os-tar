@@ -1,3 +1,9 @@
+tar (1.26-4ubuntu1pexip1) pexip; urgency=low
+
+  * Prepare Pexip packaging
+
+ -- John-Mark Bell <jmb@pexip.com>  Fri, 27 Dec 2013 00:36:00 +0000
+
 tar (1.26-4ubuntu1) precise; urgency=low
 
   * Build-depend on gettext:any, since we only need it to run tools at
