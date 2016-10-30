@@ -1,7 +1,5 @@
-# -*- buffer-read-only: t -*- vi: set ro:
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2013 Free Software Foundation, Inc.
+# Copyright (C) 2002-2015 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,15 +39,20 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([gl_PROG_AR_RANLIB])
   AC_REQUIRE([AM_PROG_CC_C_O])
-  # Code from module acl:
+  # Code from module absolute-header:
+  # Code from module acl-permissions:
+  # Code from module alignof:
   # Code from module alloca:
   # Code from module alloca-opt:
   # Code from module allocator:
   # Code from module areadlink:
+  # Code from module areadlink-with-size:
   # Code from module areadlinkat:
+  # Code from module areadlinkat-with-size:
   # Code from module argmatch:
   # Code from module argp:
   # Code from module argp-version-etc:
+  # Code from module assure:
   # Code from module at-internal:
   # Code from module backupfile:
   # Code from module bitrotate:
@@ -82,11 +85,13 @@ AC_DEFUN([gl_EARLY],
   # Code from module environ:
   # Code from module errno:
   # Code from module error:
+  # Code from module euidaccess:
   # Code from module exclude:
   # Code from module exitfail:
   # Code from module extensions:
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
+  # Code from module faccessat:
   # Code from module fchdir:
   # Code from module fchmodat:
   # Code from module fchownat:
@@ -95,13 +100,16 @@ AC_DEFUN([gl_EARLY],
   # Code from module fd-hook:
   # Code from module fdopendir:
   # Code from module fdutimensat:
+  # Code from module file-has-acl:
   # Code from module fileblocks:
   # Code from module filename:
   # Code from module filenamecat-lgpl:
+  # Code from module flexmember:
   # Code from module float:
   # Code from module fnmatch:
   # Code from module fnmatch-gnu:
   # Code from module fpending:
+  # Code from module fprintftime:
   # Code from module fseek:
   # Code from module fseeko:
   AC_REQUIRE([AC_FUNC_FSEEKO])
@@ -113,6 +121,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module getcwd-lgpl:
   # Code from module getdelim:
   # Code from module getdtablesize:
+  # Code from module getgroups:
   # Code from module getline:
   # Code from module getopt-gnu:
   # Code from module getopt-posix:
@@ -122,6 +131,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module gettime:
   # Code from module gettimeofday:
   # Code from module gitlog-to-changelog:
+  # Code from module group-member:
   # Code from module hash:
   # Code from module havelib:
   # Code from module human:
@@ -164,6 +174,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module mkfifoat:
   # Code from module mknod:
   # Code from module mktime:
+  # Code from module mktime-internal:
   # Code from module modechange:
   # Code from module msvc-inval:
   # Code from module msvc-nothrow:
@@ -180,7 +191,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module pathmax:
   # Code from module priv-set:
   # Code from module progname:
-  # Code from module qacl:
   # Code from module quote:
   # Code from module quotearg:
   # Code from module quotearg-simple:
@@ -240,12 +250,15 @@ AC_DEFUN([gl_EARLY],
   # Code from module streq:
   # Code from module strerror:
   # Code from module strerror-override:
+  # Code from module strftime:
   # Code from module string:
   # Code from module strings:
   # Code from module strndup:
   # Code from module strnlen:
   # Code from module strnlen1:
+  # Code from module strtoimax:
   # Code from module strtol:
+  # Code from module strtoll:
   # Code from module strtoul:
   # Code from module strtoull:
   # Code from module strtoumax:
@@ -258,7 +271,10 @@ AC_DEFUN([gl_EARLY],
   # Code from module tempname:
   # Code from module time:
   # Code from module time_r:
+  # Code from module time_rz:
+  # Code from module timegm:
   # Code from module timespec:
+  # Code from module timespec-sub:
   # Code from module unistd:
   # Code from module unistd-safer:
   # Code from module unitypes:
@@ -310,8 +326,10 @@ AC_DEFUN([gl_INIT],
   m4_pushdef([gl_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='gnu'
+  gl_FUNC_ACL
   gl_FUNC_ALLOCA
   gl_MODULE_INDICATOR([areadlinkat])
+  gl_MODULE_INDICATOR([areadlinkat-with-size])
   gl_ARGP
   m4_ifdef([AM_XGETTEXT_OPTION],
     [AM_][XGETTEXT_OPTION([--flag=argp_error:2:c-format])
@@ -399,7 +417,20 @@ AC_DEFUN([gl_INIT],
   m4_ifdef([AM_XGETTEXT_OPTION],
     [AM_][XGETTEXT_OPTION([--flag=error:3:c-format])
      AM_][XGETTEXT_OPTION([--flag=error_at_line:5:c-format])])
+  gl_FUNC_EUIDACCESS
+  if test $HAVE_EUIDACCESS = 0; then
+    AC_LIBOBJ([euidaccess])
+    gl_PREREQ_EUIDACCESS
+  fi
+  gl_UNISTD_MODULE_INDICATOR([euidaccess])
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_FUNC_FACCESSAT
+  if test $HAVE_FACCESSAT = 0; then
+    AC_LIBOBJ([faccessat])
+    gl_PREREQ_FACCESSAT
+  fi
+  gl_MODULE_INDICATOR([faccessat])
+  gl_UNISTD_MODULE_INDICATOR([faccessat])
   gl_FUNC_FCHDIR
   gl_UNISTD_MODULE_INDICATOR([fchdir])
   gl_FUNC_FCHMODAT
@@ -427,12 +458,14 @@ AC_DEFUN([gl_INIT],
   gl_DIRENT_MODULE_INDICATOR([fdopendir])
   gl_MODULE_INDICATOR([fdopendir])
   gl_MODULE_INDICATOR([fdutimensat])
+  gl_FILE_HAS_ACL
   gl_FILEBLOCKS
   if test $ac_cv_member_struct_stat_st_blocks = no; then
     AC_LIBOBJ([fileblocks])
     gl_PREREQ_FILEBLOCKS
   fi
   gl_FILE_NAME_CONCAT_LGPL
+  AC_C_FLEXIBLE_ARRAY_MEMBER
   gl_FLOAT_H
   if test $REPLACE_FLOAT_LDBL = 1; then
     AC_LIBOBJ([float])
@@ -451,7 +484,7 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_FNMATCH
   fi
   gl_FUNC_FPENDING
-  if test $ac_cv_func___fpending = no; then
+  if test $gl_cv_func___fpending = no; then
     AC_LIBOBJ([fpending])
     gl_PREREQ_FPENDING
   fi
@@ -501,11 +534,16 @@ AC_DEFUN([gl_INIT],
   fi
   gl_STDIO_MODULE_INDICATOR([getdelim])
   gl_FUNC_GETDTABLESIZE
-  if test $HAVE_GETDTABLESIZE = 0; then
+  if test $HAVE_GETDTABLESIZE = 0 || test $REPLACE_GETDTABLESIZE = 1; then
     AC_LIBOBJ([getdtablesize])
     gl_PREREQ_GETDTABLESIZE
   fi
   gl_UNISTD_MODULE_INDICATOR([getdtablesize])
+  gl_FUNC_GETGROUPS
+  if test $HAVE_GETGROUPS = 0 || test $REPLACE_GETGROUPS = 1; then
+    AC_LIBOBJ([getgroups])
+  fi
+  gl_UNISTD_MODULE_INDICATOR([getgroups])
   gl_FUNC_GETLINE
   if test $REPLACE_GETLINE = 1; then
     AC_LIBOBJ([getline])
@@ -547,6 +585,12 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_GETTIMEOFDAY
   fi
   gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
+  gl_FUNC_GROUP_MEMBER
+  if test $HAVE_GROUP_MEMBER = 0; then
+    AC_LIBOBJ([group-member])
+    gl_PREREQ_GROUP_MEMBER
+  fi
+  gl_UNISTD_MODULE_INDICATOR([group-member])
   gl_HUMAN
   gl_INTTOSTR
   gl_INTTYPES_H
@@ -576,8 +620,6 @@ AC_DEFUN([gl_INIT],
   gl_FUNC_LINKAT
   if test $HAVE_LINKAT = 0 || test $REPLACE_LINKAT = 1; then
     AC_LIBOBJ([linkat])
-  fi
-  if test $HAVE_LINKAT = 0; then
     AC_LIBOBJ([at-func2])
   fi
   gl_UNISTD_MODULE_INDICATOR([linkat])
@@ -700,6 +742,11 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_MKTIME
   fi
   gl_TIME_MODULE_INDICATOR([mktime])
+  gl_FUNC_MKTIME_INTERNAL
+  if test $REPLACE_MKTIME = 1; then
+    AC_LIBOBJ([mktime])
+    gl_PREREQ_MKTIME
+  fi
   gl_MODECHANGE
   gl_MSVC_INVAL
   if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
@@ -740,7 +787,6 @@ AC_DEFUN([gl_INIT],
   gl_PRIV_SET
   AC_CHECK_DECLS([program_invocation_name], [], [], [#include <errno.h>])
   AC_CHECK_DECLS([program_invocation_short_name], [], [], [#include <errno.h>])
-  gl_FUNC_ACL
   gl_QUOTE
   gl_QUOTEARG
   gl_FUNC_RAISE
@@ -773,7 +819,7 @@ AC_DEFUN([gl_INIT],
   fi
   gl_UNISTD_MODULE_INDICATOR([readlink])
   gl_FUNC_READLINKAT
-  if test $HAVE_READLINKAT = 0; then
+  if test $HAVE_READLINKAT = 0 || test $REPLACE_READLINKAT = 1; then
     AC_LIBOBJ([readlinkat])
   fi
   gl_UNISTD_MODULE_INDICATOR([readlinkat])
@@ -904,6 +950,7 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([strerror-override])
     gl_PREREQ_SYS_H_WINSOCK2
   fi
+  gl_FUNC_GNU_STRFTIME
   gl_HEADER_STRING_H
   gl_HEADER_STRINGS_H
   gl_FUNC_STRNDUP
@@ -917,10 +964,22 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_STRNLEN
   fi
   gl_STRING_MODULE_INDICATOR([strnlen])
+  gl_FUNC_STRTOIMAX
+  if test $HAVE_DECL_STRTOIMAX = 0 || test $REPLACE_STRTOIMAX = 1; then
+    AC_LIBOBJ([strtoimax])
+    gl_PREREQ_STRTOIMAX
+  fi
+  gl_INTTYPES_MODULE_INDICATOR([strtoimax])
   gl_FUNC_STRTOL
   if test $ac_cv_func_strtol = no; then
     AC_LIBOBJ([strtol])
   fi
+  gl_FUNC_STRTOLL
+  if test $HAVE_STRTOLL = 0; then
+    AC_LIBOBJ([strtoll])
+    gl_PREREQ_STRTOLL
+  fi
+  gl_STDLIB_MODULE_INDICATOR([strtoll])
   gl_FUNC_STRTOUL
   if test $ac_cv_func_strtoul = no; then
     AC_LIBOBJ([strtoul])
@@ -932,7 +991,7 @@ AC_DEFUN([gl_INIT],
   fi
   gl_STDLIB_MODULE_INDICATOR([strtoull])
   gl_FUNC_STRTOUMAX
-  if test $ac_cv_func_strtoumax = no; then
+  if test $HAVE_DECL_STRTOUMAX = 0 || test $REPLACE_STRTOUMAX = 1; then
     AC_LIBOBJ([strtoumax])
     gl_PREREQ_STRTOUMAX
   fi
@@ -943,7 +1002,7 @@ AC_DEFUN([gl_INIT],
   fi
   gl_UNISTD_MODULE_INDICATOR([symlink])
   gl_FUNC_SYMLINKAT
-  if test $HAVE_SYMLINKAT = 0; then
+  if test $HAVE_SYMLINKAT = 0 || test $REPLACE_SYMLINKAT = 1; then
     AC_LIBOBJ([symlinkat])
   fi
   gl_UNISTD_MODULE_INDICATOR([symlinkat])
@@ -962,12 +1021,23 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_TIME_R
   fi
   gl_TIME_MODULE_INDICATOR([time_r])
+  gl_TIME_RZ
+  if test "$HAVE_TIMEZONE_T" = 0; then
+    AC_LIBOBJ([time_rz])
+  fi
+  gl_TIME_MODULE_INDICATOR([time_rz])
+  gl_FUNC_TIMEGM
+  if test $HAVE_TIMEGM = 0 || test $REPLACE_TIMEGM = 1; then
+    AC_LIBOBJ([timegm])
+    gl_PREREQ_TIMEGM
+  fi
+  gl_TIME_MODULE_INDICATOR([timegm])
   gl_TIMESPEC
   gl_UNISTD_H
   gl_UNISTD_SAFER
-  gl_LIBUNISTRING_LIBHEADER([0.9], [unitypes.h])
-  gl_LIBUNISTRING_LIBHEADER([0.9], [uniwidth.h])
-  gl_LIBUNISTRING_MODULE([0.9.4], [uniwidth/width])
+  gl_LIBUNISTRING_LIBHEADER([0.9.4], [unitypes.h])
+  gl_LIBUNISTRING_LIBHEADER([0.9.4], [uniwidth.h])
+  gl_LIBUNISTRING_MODULE([0.9.6], [uniwidth/width])
   gl_FUNC_UNLINK
   if test $REPLACE_UNLINK = 1; then
     AC_LIBOBJ([unlink])
@@ -1177,16 +1247,20 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/warn-on-use.h
   doc/parse-datetime.texi
   lib/acl-errno-valid.c
+  lib/acl-internal.c
   lib/acl-internal.h
   lib/acl.h
   lib/acl_entries.c
+  lib/alignof.h
   lib/alloca.c
   lib/alloca.in.h
   lib/allocator.c
   lib/allocator.h
   lib/anytostr.c
+  lib/areadlink-with-size.c
   lib/areadlink.c
   lib/areadlink.h
+  lib/areadlinkat-with-size.c
   lib/areadlinkat.c
   lib/argmatch.c
   lib/argmatch.h
@@ -1207,6 +1281,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/argp.h
   lib/asnprintf.c
   lib/asprintf.c
+  lib/assure.h
   lib/at-func.c
   lib/at-func2.c
   lib/backupfile.c
@@ -1239,7 +1314,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/closeout.c
   lib/closeout.h
   lib/config.charset
-  lib/copy-acl.c
   lib/dirent--.h
   lib/dirent-private.h
   lib/dirent-safer.h
@@ -1255,10 +1329,12 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/errno.in.h
   lib/error.c
   lib/error.h
+  lib/euidaccess.c
   lib/exclude.c
   lib/exclude.h
   lib/exitfail.c
   lib/exitfail.h
+  lib/faccessat.c
   lib/fchdir.c
   lib/fchmodat.c
   lib/fchown-stub.c
@@ -1283,6 +1359,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/fnmatch_loop.c
   lib/fpending.c
   lib/fpending.h
+  lib/fprintftime.c
+  lib/fprintftime.h
   lib/fseek.c
   lib/fseeko.c
   lib/fstat.c
@@ -1290,11 +1368,13 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/full-write.c
   lib/full-write.h
   lib/futimens.c
+  lib/get-permissions.c
   lib/getcwd-lgpl.c
   lib/getcwd.c
   lib/getdelim.c
   lib/getdtablesize.c
   lib/getfilecon.c
+  lib/getgroups.c
   lib/getline.c
   lib/getopt.c
   lib/getopt.in.h
@@ -1304,6 +1384,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/gettext.h
   lib/gettime.c
   lib/gettimeofday.c
+  lib/group-member.c
   lib/hash.c
   lib/hash.h
   lib/human.c
@@ -1384,8 +1465,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/priv-set.h
   lib/progname.c
   lib/progname.h
-  lib/qcopy-acl.c
-  lib/qset-acl.c
   lib/quote.h
   lib/quotearg.c
   lib/quotearg.h
@@ -1427,7 +1506,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/secure_getenv.c
   lib/selinux-at.c
   lib/selinux-at.h
-  lib/set-acl.c
+  lib/set-permissions.c
   lib/setenv.c
   lib/signal.in.h
   lib/size_max.h
@@ -1455,6 +1534,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/strerror-override.c
   lib/strerror-override.h
   lib/strerror.c
+  lib/strftime.c
+  lib/strftime.h
   lib/string.in.h
   lib/strings.in.h
   lib/stripslash.c
@@ -1465,6 +1546,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/strnlen1.h
   lib/strtoimax.c
   lib/strtol.c
+  lib/strtoll.c
   lib/strtoul.c
   lib/strtoull.c
   lib/strtoumax.c
@@ -1476,8 +1558,12 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/sysexits.in.h
   lib/tempname.c
   lib/tempname.h
+  lib/time-internal.h
   lib/time.in.h
   lib/time_r.c
+  lib/time_rz.c
+  lib/timegm.c
+  lib/timespec-sub.c
   lib/timespec.c
   lib/timespec.h
   lib/uinttostr.c
@@ -1532,6 +1618,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/xvasprintf.c
   lib/xvasprintf.h
   m4/00gnulib.m4
+  m4/absolute-header.m4
   m4/acl.m4
   m4/alloca.m4
   m4/argp.m4
@@ -1560,9 +1647,11 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/environ.m4
   m4/errno_h.m4
   m4/error.m4
+  m4/euidaccess.m4
   m4/exponentd.m4
   m4/extensions.m4
   m4/extern-inline.m4
+  m4/faccessat.m4
   m4/fchdir.m4
   m4/fchmodat.m4
   m4/fchownat.m4
@@ -1572,6 +1661,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/fdopendir.m4
   m4/fileblocks.m4
   m4/filenamecat.m4
+  m4/flexmember.m4
   m4/float_h.m4
   m4/fnmatch.m4
   m4/fpending.m4
@@ -1585,6 +1675,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/getcwd.m4
   m4/getdelim.m4
   m4/getdtablesize.m4
+  m4/getgroups.m4
   m4/getline.m4
   m4/getopt.m4
   m4/getpagesize.m4
@@ -1594,6 +1685,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/glibc2.m4
   m4/glibc21.m4
   m4/gnulib-common.m4
+  m4/group-member.m4
   m4/human.m4
   m4/iconv.m4
   m4/include_next.m4
@@ -1659,6 +1751,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/nl_langinfo.m4
   m4/nls.m4
   m4/nocrash.m4
+  m4/obstack.m4
   m4/off_t.m4
   m4/open.m4
   m4/openat.m4
@@ -1713,11 +1806,14 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strchrnul.m4
   m4/strdup.m4
   m4/strerror.m4
+  m4/strftime.m4
   m4/string_h.m4
   m4/strings_h.m4
   m4/strndup.m4
   m4/strnlen.m4
+  m4/strtoimax.m4
   m4/strtol.m4
+  m4/strtoll.m4
   m4/strtoul.m4
   m4/strtoull.m4
   m4/strtoumax.m4
@@ -1732,6 +1828,8 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/threadlib.m4
   m4/time_h.m4
   m4/time_r.m4
+  m4/time_rz.m4
+  m4/timegm.m4
   m4/timespec.m4
   m4/tm_gmtoff.m4
   m4/uintmax_t.m4

@@ -1,7 +1,7 @@
 /* GNU dump extensions to tar.
 
-   Copyright 1988, 1992-1994, 1996-1997, 1999-2001, 2003-2009, 2013
-   Free Software Foundation, Inc.
+   Copyright 1988, 1992-1994, 1996-1997, 1999-2001, 2003-2009,
+   2013-2014, 2016 Free Software Foundation, Inc.
 
    This file is part of GNU tar.
 
@@ -734,6 +734,8 @@ scan_directory (struct tar_stat_info *st)
   if (! dirp)
     savedir_error (dir);
 
+  info_attach_exclist (st);
+
   tmp = xstrdup (dir);
   zap_slashes (tmp);
 
@@ -759,10 +761,10 @@ scan_directory (struct tar_stat_info *st)
 	       entry = dumpdir_next (itr))
 	    {
 	      char *full_name = namebuf_name (nbuf, entry + 1);
-	      
+
 	      if (*entry == 'I') /* Ignored entry */
 		*entry = 'N';
-	      else if (excluded_name (full_name))
+	      else if (excluded_name (full_name, st))
 		*entry = 'N';
 	      else
 		{
@@ -792,7 +794,7 @@ scan_directory (struct tar_stat_info *st)
 			    diag = stat_diag;
 			}
 		    }
-		  
+
 		  if (diag)
 		    {
 		      file_removed_diag (full_name, false, diag);
@@ -806,7 +808,7 @@ scan_directory (struct tar_stat_info *st)
 		      else if (directory->children == ALL_CHILDREN)
 			pd_flag |= PD_FORCE_CHILDREN | ALL_CHILDREN;
 		      *entry = 'D';
-		      
+
 		      stsub.parent = st;
 		      procdir (full_name, &stsub, pd_flag, entry);
 		      restore_parent_fd (&stsub);
@@ -823,7 +825,7 @@ scan_directory (struct tar_stat_info *st)
 		    *entry = 'N';
 		  else
 		    *entry = 'Y';
-		  
+
 		  tar_stat_destroy (&stsub);
 		}
 	    }
@@ -832,7 +834,7 @@ scan_directory (struct tar_stat_info *st)
       else if (directory->tagfile)
 	maketagdumpdir (directory);
     }
-  
+
   namebuf_free (nbuf);
 
   free (dirp);
@@ -1153,11 +1155,14 @@ read_num (FILE *fp, char const *fieldname,
     }
 
   if (c)
-    FATAL_ERROR ((0, 0,
-		  _("%s: byte %s: %s %s followed by invalid byte 0x%02x"),
-		  quotearg_colon (listed_incremental_option),
-		  offtostr (ftello (fp), offbuf),
-		  fieldname, buf, c));
+    {
+      unsigned uc = c;
+      FATAL_ERROR ((0, 0,
+		    _("%s: byte %s: %s %s followed by invalid byte 0x%02x"),
+		    quotearg_colon (listed_incremental_option),
+		    offtostr (ftello (fp), offbuf),
+		    fieldname, buf, uc));
+    }
 
   *pval = strtosysint (buf, NULL, min_val, max_val);
   conversion_errno = errno;
@@ -1296,8 +1301,8 @@ void
 show_snapshot_field_ranges (void)
 {
   struct field_range const *p;
-  char minbuf[max (SYSINT_BUFSIZE, INT_BUFSIZE_BOUND (intmax_t))];
-  char maxbuf[max (SYSINT_BUFSIZE, INT_BUFSIZE_BOUND (uintmax_t))];
+  char minbuf[SYSINT_BUFSIZE];
+  char maxbuf[SYSINT_BUFSIZE];
 
   printf("This tar's snapshot file field ranges are\n");
   printf ("   (%-15s => [ %s, %s ]):\n\n", "field name", "min", "max");
@@ -1406,7 +1411,7 @@ write_directory_file_entry (void *entry, void *data)
 
   if (DIR_IS_FOUND (directory))
     {
-      char buf[max (SYSINT_BUFSIZE, INT_BUFSIZE_BOUND (intmax_t))];
+      char buf[SYSINT_BUFSIZE];
       char const *s;
 
       s = DIR_IS_NFS (directory) ? "1" : "0";
@@ -1539,9 +1544,10 @@ dumpdir_ok (char *dumpdir)
     {
       if (expect && *p != expect)
 	{
+	  unsigned char uc = *p;
 	  ERROR ((0, 0,
 		  _("Malformed dumpdir: expected '%c' but found %#3o"),
-		  expect, *p));
+		  expect, uc));
 	  return false;
 	}
       switch (*p)
@@ -1576,7 +1582,7 @@ dumpdir_ok (char *dumpdir)
 	  if (expect != 'T')
 	    {
 	      ERROR ((0, 0,
-		      _("Malformed dumpdir: 'T' not preceeded by 'R'")));
+		      _("Malformed dumpdir: 'T' not preceded by 'R'")));
 	      return false;
 	    }
 	  if (p[1] == 0 && !has_tempdir)
@@ -1706,7 +1712,7 @@ try_purge_directory (char const *directory_name)
       const char *entry;
       struct stat st;
       free (p);
-      p = new_name (directory_name, cur);
+      p = make_file_name (directory_name, cur);
 
       if (deref_stat (p, &st) != 0)
 	{
