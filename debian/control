@@ -9,7 +9,7 @@ Build-Depends: debhelper (>> 5), gettext:any, autoconf, autotools-dev
 Standards-Version: 3.9.2
 Vcs-Git: git://git.gag.com/debian/tar
 Vcs-Browser: http://git.gag.com/?p=debian/tar
-XS-Pexip-Upstream: http://archive.ubuntu.com/ubuntu/ precise
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ jessie
 
 Package: tar
 Architecture: any
