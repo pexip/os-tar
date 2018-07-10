@@ -1,7 +1,7 @@
 /* Buffer management for tar.
 
-   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2013 Free Software
-   Foundation, Inc.
+   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2013-2014, 2016 Free
+   Software Foundation, Inc.
 
    This file is part of GNU tar.
 
@@ -247,7 +247,7 @@ set_volume_start_time (void)
   last_stat_time = volume_start_time;
 }
 
-void
+double
 compute_duration (void)
 {
   struct timespec now;
@@ -255,6 +255,7 @@ compute_duration (void)
   duration += ((now.tv_sec - last_stat_time.tv_sec)
                + (now.tv_nsec - last_stat_time.tv_nsec) / 1e9);
   gettime (&last_stat_time);
+  return duration;
 }
 
 
@@ -390,7 +391,10 @@ check_compressed_archive (bool *pshort)
   /* Restore global values */
   read_full_records = sfr;
 
-  if (tar_checksum (record_start, true) == HEADER_SUCCESS)
+  if ((strcmp (record_start->header.magic, TMAGIC) == 0 ||
+       strcmp (record_start->buffer + offsetof (struct posix_header, magic),
+	       OLDGNU_MAGIC) == 0) &&
+      tar_checksum (record_start, true) == HEADER_SUCCESS)
     /* Probably a valid header */
     return ct_tar;
 
@@ -488,64 +492,98 @@ open_compressed_archive (void)
   return archive;
 }
 
-
-static void
+static int
 print_stats (FILE *fp, const char *text, tarlong numbytes)
 {
-  char bytes[sizeof (tarlong) * CHAR_BIT];
   char abbr[LONGEST_HUMAN_READABLE + 1];
   char rate[LONGEST_HUMAN_READABLE + 1];
+  int n = 0;
 
   int human_opts = human_autoscale | human_base_1024 | human_SI | human_B;
 
-  sprintf (bytes, TARLONG_FORMAT, numbytes);
-
-  fprintf (fp, "%s: %s (%s, %s/s)\n",
-           text, bytes,
-           human_readable (numbytes, abbr, human_opts, 1, 1),
-           (0 < duration && numbytes / duration < (uintmax_t) -1
-            ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
-            : "?"));
+  if (text && text[0])
+    n += fprintf (fp, "%s: ", gettext (text));
+  return n + fprintf (fp, TARLONG_FORMAT " (%s, %s/s)",
+		      numbytes,
+		      human_readable (numbytes, abbr, human_opts, 1, 1),
+		      (0 < duration && numbytes / duration < (uintmax_t) -1
+		       ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
+		       : "?"));
 }
 
-void
-print_total_stats (void)
+/* Format totals to file FP.  FORMATS is an array of strings to output
+   before each data item (bytes read, written, deleted, in that order).
+   EOR is a delimiter to output after each item (used only if deleting
+   from the archive), EOL is a delimiter to add at the end of the output
+   line. */
+int
+format_total_stats (FILE *fp, char const *const *formats, int eor, int eol)
 {
+  int n;
+
   switch (subcommand_option)
     {
     case CREATE_SUBCOMMAND:
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
     case APPEND_SUBCOMMAND:
-      /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
-      print_stats (stderr, _("Total bytes written"),
-                   prev_written + bytes_written);
+      n = print_stats (fp, formats[TF_WRITE],
+		       prev_written + bytes_written);
       break;
 
     case DELETE_SUBCOMMAND:
       {
         char buf[UINTMAX_STRSIZE_BOUND];
-        print_stats (stderr, _("Total bytes read"),
-                     records_read * record_size);
-        print_stats (stderr, _("Total bytes written"),
-                     prev_written + bytes_written);
-        fprintf (stderr, _("Total bytes deleted: %s\n"),
-                 STRINGIFY_BIGINT ((records_read - records_skipped)
-                                    * record_size
-                                   - (prev_written + bytes_written), buf));
+        n = print_stats (fp, formats[TF_READ],
+			 records_read * record_size);
+
+	fputc (eor, fp);
+	n++;
+
+        n += print_stats (fp, formats[TF_WRITE],
+			  prev_written + bytes_written);
+
+	fputc (eor, fp);
+	n++;
+
+	if (formats[TF_DELETED] && formats[TF_DELETED][0])
+	  n += fprintf (fp, "%s: ", gettext (formats[TF_DELETED]));
+        n += fprintf (fp, "%s",
+		      STRINGIFY_BIGINT ((records_read - records_skipped)
+					* record_size
+					- (prev_written + bytes_written), buf));
       }
       break;
 
     case EXTRACT_SUBCOMMAND:
     case LIST_SUBCOMMAND:
     case DIFF_SUBCOMMAND:
-      print_stats (stderr, _("Total bytes read"),
-                   records_read * record_size);
+      n = print_stats (fp, _(formats[TF_READ]),
+		       records_read * record_size);
       break;
 
     default:
       abort ();
     }
+  if (eol)
+    {
+      fputc (eol, fp);
+      n++;
+    }
+  return n;
+}
+
+static char const *const default_total_format[] = {
+  N_("Total bytes read"),
+  /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
+  N_("Total bytes written"),
+  N_("Total bytes deleted")
+};
+
+void
+print_total_stats (void)
+{
+  format_total_stats (stderr, default_total_format, '\n', '\n');
 }
 
 /* Compute and return the block ordinal at current_block.  */
@@ -633,6 +671,22 @@ init_buffer (void)
   record_end = record_start + blocking_factor;
 }
 
+static void
+check_tty (enum access_mode mode)
+{
+  /* Refuse to read archive from and write it to a tty. */
+  if (strcmp (archive_name_array[0], "-") == 0
+      && isatty (mode == ACCESS_READ ? STDIN_FILENO : STDOUT_FILENO))
+    {
+      FATAL_ERROR ((0, 0,
+		    mode == ACCESS_READ
+		    ? _("Refusing to read archive contents from terminal "
+			"(missing -f option?)")
+		    : _("Refusing to write archive contents to terminal "
+			"(missing -f option?)")));
+    }
+}
+
 /* Open an archive file.  The argument specifies whether we are
    reading or writing, or both.  */
 static void
@@ -653,6 +707,7 @@ _open_archive (enum access_mode wanted_access)
 
   /* When updating the archive, we start with reading.  */
   access_mode = wanted_access == ACCESS_UPDATE ? ACCESS_READ : wanted_access;
+  check_tty (access_mode);
 
   read_full_records = read_full_records_option;
 
@@ -696,7 +751,6 @@ _open_archive (enum access_mode wanted_access)
             enum compress_type type;
 
             archive = STDIN_FILENO;
-
             type = check_compressed_archive (&shortfile);
             if (type != ct_tar && type != ct_none)
               FATAL_ERROR ((0, 0,
@@ -929,17 +983,27 @@ short_read (size_t status)
 void
 flush_archive (void)
 {
-  size_t buffer_level = current_block->buffer - record_start->buffer;
-  record_start_block += record_end - record_start;
-  current_block = record_start;
-  record_end = record_start + blocking_factor;
-
+  size_t buffer_level;
+  
   if (access_mode == ACCESS_READ && time_to_start_writing)
     {
       access_mode = ACCESS_WRITE;
       time_to_start_writing = false;
       backspace_output ();
+      if (record_end - record_start < blocking_factor)
+	{
+	  memset (record_end, 0,
+		  (blocking_factor - (record_end - record_start))
+		  * BLOCKSIZE);
+	  record_end = record_start + blocking_factor;
+	  return;
+	}
     }
+
+  buffer_level = current_block->buffer - record_start->buffer;
+  record_start_block += record_end - record_start;
+  current_block = record_start;
+  record_end = record_start + blocking_factor;
 
   switch (access_mode)
     {
@@ -980,7 +1044,7 @@ backspace_output (void)
 
     /* Seek back to the beginning of this record and start writing there.  */
 
-    position -= record_size;
+    position -= record_end->buffer - record_start->buffer;
     if (position < 0)
       position = 0;
     if (rmtlseek (archive, position, SEEK_SET) != position)
@@ -1059,6 +1123,16 @@ close_archive (void)
   free (record_buffer[0]);
   free (record_buffer[1]);
   bufmap_free (NULL);
+}
+
+void
+write_fatal_details (char const *name, ssize_t status, size_t size)
+{
+  write_error_details (name, status, size);
+  if (rmtclose (archive) != 0)
+    close_error (*archive_name_cursor);
+  sys_wait_for_child (child_pid, false);
+  fatal_exit ();
 }
 
 /* Called to initialize the global volume number.  */
@@ -1355,7 +1429,10 @@ try_new_volume (void)
 
   header = find_next_block ();
   if (!header)
-    return false;
+    {
+      WARN ((0, 0, _("This does not look like a tar archive")));
+      return false;
+    }
 
   switch (header->header.typeflag)
     {
@@ -1365,7 +1442,7 @@ try_new_volume (void)
 	if (read_header (&header, &dummy, read_header_x_global)
 	    != HEADER_SUCCESS_EXTENDED)
 	  {
-	    ERROR ((0, 0, _("This does not look like a tar archive")));
+	    WARN ((0, 0, _("This does not look like a tar archive")));
 	    return false;
 	  }
 
@@ -1394,7 +1471,7 @@ try_new_volume (void)
 	    break;
 
 	  default:
-	    ERROR ((0, 0, _("This does not look like a tar archive")));
+	    WARN ((0, 0, _("This does not look like a tar archive")));
 	    return false;
 	  }
         break;
@@ -1429,8 +1506,14 @@ try_new_volume (void)
   if (bufmap_head)
     {
       uintmax_t s;
-      if (!continued_file_name
-          || strcmp (continued_file_name, bufmap_head->file_name))
+      if (!continued_file_name)
+	{
+	  WARN ((0, 0, _("%s is not continued on this volume"),
+		 quote (bufmap_head->file_name)));
+	  return false;
+	}
+      
+      if (strcmp (continued_file_name, bufmap_head->file_name))
         {
           if ((archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)
               && strlen (bufmap_head->file_name) >= NAME_FIELD_SIZE

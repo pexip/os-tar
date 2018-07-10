@@ -1,17 +1,50 @@
+tar (1.29b-1.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * CVE-2016-6321: Bypassing the extract path name.
+    When extracting, member names containing '..' components are skipped.
+    (Closes: #842339)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Sun, 30 Oct 2016 07:35:31 +0100
+
+tar (1.29b-1) unstable; urgency=medium
+
+  * re-constitute the 1.29 orig.tar with man pages as version 1.29b
+  * re-enable parallel builds and increase build verbosity, closes: #824631
+  * switch to man pages provided by upstream since 1.28, closes: #827017, 
+    #391714, #473228, #524819, #711725, #720877, #766016, #779795.
+
+ -- Bdale Garbee <bdale@gag.com>  Fri, 22 Jul 2016 13:13:55 -0600
+
+tar (1.29-1) unstable; urgency=medium
+
+  * new upstream version, closes: #816072
+
+ -- Bdale Garbee <bdale@gag.com>  Tue, 17 May 2016 12:37:57 -0600
+
+tar (1.28-2) unstable; urgency=low
+
+  * patch from upstream to fix --files-from and recursive extract,
+    closes: #800380
+
+ -- Bdale Garbee <bdale@gag.com>  Mon, 28 Sep 2015 15:39:02 -0600
+
+tar (1.28-1) unstable; urgency=low
+
+  * new upstream version
+  * patch from Reiner Herrman that sets timestamp in generated manpage to 
+    latest changelog date to make building the package reproducible, 
+    closes: #774463
+  * patch from Lunar adding --clamp-mtime option for reproducible builds,
+    closes: #790415
+
+ -- Bdale Garbee <bdale@gag.com>  Sun, 23 Aug 2015 19:56:52 +0200
+
 tar (1.27.1-2+deb8u1pexip1) pexip; urgency=low
 
   * Migrate to Jessie
 
  -- John-Mark Bell <jmb@pexip.com>  Wed, 29 Mar 2017 23:00:01 +0100
-
-tar (1.27.1-2+deb8u1) jessie-security; urgency=high
-
-  * Non-maintainer upload by the Security Team.
-  * CVE-2016-6321: Bypassing the extract path name.
-    When extracting, member names containing '..' components are skipped.
-    (Closes: #842339)
-
- -- Salvatore Bonaccorso <carnil@debian.org>  Sun, 30 Oct 2016 07:48:55 +0100
 
 tar (1.27.1-2) unstable; urgency=low
 
