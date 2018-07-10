@@ -1,3 +1,9 @@
+tar (1.29b-1.1pexip1) pexip; urgency=medium
+
+  * Migrate to Stretch
+
+ -- John-Mark Bell <jmb@pexip.com>  Tue, 10 Jul 2018 11:52:21 +0000
+
 tar (1.29b-1.1) unstable; urgency=medium
 
   * Non-maintainer upload.
