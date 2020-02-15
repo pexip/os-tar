@@ -8,7 +8,7 @@ Build-Depends: debhelper (>> 5), gettext, autoconf, automake, autopoint, autotoo
 Standards-Version: 3.9.8
 Vcs-Git: git://git.gag.com/debian/tar
 Vcs-Browser: http://git.gag.com/?p=debian/tar
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ stretch
+XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
 
 Package: tar
 Architecture: any
