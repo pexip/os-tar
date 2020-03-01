@@ -1,3 +1,80 @@
+tar (1.30+dfsg-6) unstable; urgency=medium
+
+  * eliminate ancient prerm cleanup code that breaks with merged /usr, 
+    and is no longer considered useful, closes: #926722
+
+ -- Bdale Garbee <bdale@gag.com>  Tue, 23 Apr 2019 10:05:54 -0600
+
+tar (1.30+dfsg-5) unstable; urgency=medium
+
+  * change libexecdir in configure to /usr/sbin, closes: #760247, #919493
+  * switched to upstream man pages as of 1.29b, closes: #729980, #391060
+  * add references to the non-free tar-doc package, and the URL for the
+    tar documentation on the FSF's web site to README.Debian, 
+    closes: #711726
+
+ -- Bdale Garbee <bdale@gag.com>  Mon, 04 Feb 2019 10:43:28 -0700
+
+tar (1.30+dfsg-4) unstable; urgency=medium
+
+  * merge NMU 
+  * update standards version
+  * include upstream homepage reference, closes: #888210
+
+ -- Bdale Garbee <bdale@gag.com>  Sat, 05 Jan 2019 16:15:25 -0700
+
+tar (1.30+dfsg-3.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Infinite read loop in sparse_dump_region function (CVE-2018-20482)
+    (Closes: #917377)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Mon, 31 Dec 2018 21:08:52 +0100
+
+tar (1.30+dfsg-3) unstable; urgency=medium
+
+  * elide reference to non-existent section 5 page from section 1 tar manpage,
+    closes: #846490
+  * update README.Debian to reflect ncompress now being in main
+  * remove the NEWS file since it's more than a decade since the latest content
+    and the text there confuses new users
+  * stop delivering the /etc/rmt script, use a symlink instead, closes: #653043
+  * fold in patch for difflink.at (test number 92) that fixes kfreebsd builds,
+    closes: #837351
+  * apply patch to allow test suite to pass on Hurd again, closes: #910985
+  * apply patch to incorporate zstd support, closes: #894065
+  * apply patch to correct Italian translation, closes: #852462
+
+ -- Bdale Garbee <bdale@gag.com>  Fri, 16 Nov 2018 21:33:47 -1000
+
+tar (1.30+dfsg-2) unstable; urgency=medium
+
+  * updated pristine-tar patch from Antonio Terceiro, making it possible for
+    pristine-tar to ask tar to recreate pre-1.30 broken behavior so that it's
+    possible to recover a tar file stored in a repo in the old, broken format.
+    closes: #897653
+  * patch from upstream that fixes race condition in dirrem01 and dirrem02
+    tests when building on a slow machine, closes: #897591
+
+ -- Bdale Garbee <bdale@gag.com>  Wed, 16 May 2018 01:47:48 -0600
+
+tar (1.30+dfsg-1) unstable; urgency=medium
+
+  * new upstream version
+  * update Vcs entries for move of packaging repo to salsa.debian.org
+  * add depends/conflicts tar version details to tar-scripts, closes: #865428
+
+ -- Bdale Garbee <bdale@gag.com>  Sun, 29 Apr 2018 12:39:42 -0600
+
+tar (1.29b-2) unstable; urgency=medium
+
+  * add suggests tar-doc, closes: #856958
+  * increase test suite verbosity and dump test results into build log on 
+    make check failure for kfreebsd team
+  * move primary git repo to collab-maint
+
+ -- Bdale Garbee <bdale@gag.com>  Fri, 21 Jul 2017 08:35:22 -0600
+
 tar (1.29b-1.1pexip1) pexip; urgency=medium
 
   * Migrate to Stretch
