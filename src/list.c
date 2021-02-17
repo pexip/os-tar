@@ -1,7 +1,6 @@
 /* List a tar archive, with support routines for reading a tar archive.
 
-   Copyright 1988, 1992-1994, 1996-2001, 2003-2007, 2010, 2012-2017 Free
-   Software Foundation, Inc.
+   Copyright 1988-2021 Free Software Foundation, Inc.
 
    This file is part of GNU tar.
 
@@ -23,7 +22,7 @@
 #include <system.h>
 #include <inttostr.h>
 #include <quotearg.h>
-
+#include <time.h>
 #include "common.h"
 
 union block *current_header;	/* points to current archive header */
@@ -409,26 +408,27 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	     enum read_header_mode mode)
 {
   union block *header;
-  union block *header_copy;
   char *bp;
   union block *data_block;
   size_t size, written;
-  union block *next_long_name = 0;
-  union block *next_long_link = 0;
+  union block *next_long_name = NULL;
+  union block *next_long_link = NULL;
   size_t next_long_name_blocks = 0;
   size_t next_long_link_blocks = 0;
-
+  enum read_header status = HEADER_SUCCESS;
+  
   while (1)
     {
-      enum read_header status;
-
       header = find_next_block ();
       *return_block = header;
       if (!header)
-	return HEADER_END_OF_FILE;
+	{
+	  status = HEADER_END_OF_FILE;
+	  break;
+	}
 
       if ((status = tar_checksum (header, false)) != HEADER_SUCCESS)
-	return status;
+	break;
 
       /* Good block.  Decode file size and return.  */
 
@@ -438,7 +438,10 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	{
 	  info->stat.st_size = OFF_FROM_HEADER (header->header.size);
 	  if (info->stat.st_size < 0)
-	    return HEADER_FAILURE;
+	    {
+	      status = HEADER_FAILURE;
+	      break;
+	    }
 	}
 
       if (header->header.typeflag == GNUTYPE_LONGNAME
@@ -448,10 +451,14 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	  || header->header.typeflag == SOLARIS_XHDTYPE)
 	{
 	  if (mode == read_header_x_raw)
-	    return HEADER_SUCCESS_EXTENDED;
+	    {
+	      status = HEADER_SUCCESS_EXTENDED;
+	      break;
+	    }
 	  else if (header->header.typeflag == GNUTYPE_LONGNAME
 		   || header->header.typeflag == GNUTYPE_LONGLINK)
 	    {
+	      union block *header_copy;
 	      size_t name_size = info->stat.st_size;
 	      size_t n = name_size % BLOCKSIZE;
 	      size = name_size + BLOCKSIZE;
@@ -518,7 +525,10 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	      xheader_decode_global (&xhdr);
 	      xheader_destroy (&xhdr);
 	      if (mode == read_header_x_global)
-		return HEADER_SUCCESS_EXTENDED;
+		{
+		  status = HEADER_SUCCESS_EXTENDED;
+		  break;
+		}
 	    }
 
 	  /* Loop!  */
@@ -537,6 +547,7 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	      name = next_long_name->buffer + BLOCKSIZE;
 	      recent_long_name = next_long_name;
 	      recent_long_name_blocks = next_long_name_blocks;
+	      next_long_name = NULL;
 	    }
 	  else
 	    {
@@ -568,6 +579,7 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	      name = next_long_link->buffer + BLOCKSIZE;
 	      recent_long_link = next_long_link;
 	      recent_long_link_blocks = next_long_link_blocks;
+	      next_long_link = NULL;
 	    }
 	  else
 	    {
@@ -579,9 +591,12 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	    }
 	  assign_string (&info->link_name, name);
 
-	  return HEADER_SUCCESS;
+	  break;
 	}
     }
+  free (next_long_name);
+  free (next_long_link);
+  return status;
 }
 
 #define ISOCTAL(c) ((c)>='0'&&(c)<='7')
@@ -631,10 +646,12 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
   stat_info->stat.st_mode = mode;
   stat_info->mtime.tv_sec = TIME_FROM_HEADER (header->header.mtime);
   stat_info->mtime.tv_nsec = 0;
-  assign_string (&stat_info->uname,
-		 header->header.uname[0] ? header->header.uname : NULL);
-  assign_string (&stat_info->gname,
-		 header->header.gname[0] ? header->header.gname : NULL);
+  assign_string_n (&stat_info->uname,
+		   header->header.uname[0] ? header->header.uname : NULL,
+		   sizeof (header->header.uname));
+  assign_string_n (&stat_info->gname,
+		   header->header.gname[0] ? header->header.gname : NULL,
+		   sizeof (header->header.gname));
 
   xheader_xattr_init (stat_info);
 
@@ -1049,15 +1066,11 @@ tartime (struct timespec t, bool full_time)
     {
       if (full_time)
 	{
-	  sprintf (buffer, "%04ld-%02d-%02d %02d:%02d:%02d",
-		   tm->tm_year + 1900L, tm->tm_mon + 1, tm->tm_mday,
-		   tm->tm_hour, tm->tm_min, tm->tm_sec);
+	  strftime (buffer, sizeof buffer, "%Y-%m-%d %H:%M:%S", tm);
 	  code_ns_fraction (ns, buffer + strlen (buffer));
 	}
       else
-	sprintf (buffer, "%04ld-%02d-%02d %02d:%02d",
-		 tm->tm_year + 1900L, tm->tm_mon + 1, tm->tm_mday,
-		 tm->tm_hour, tm->tm_min);
+	strftime (buffer, sizeof buffer, "%Y-%m-%d %H:%M", tm);
       return buffer;
     }
 
@@ -1443,7 +1456,7 @@ test_archive_label (void)
       decode_header (current_header,
 		     &current_stat_info, &current_format, 0);
       if (current_header->header.typeflag == GNUTYPE_VOLHDR)
-	assign_string (&volume_label, current_header->header.name);
+	ASSIGN_STRING_N (&volume_label, current_header->header.name);
 
       if (volume_label)
 	{
