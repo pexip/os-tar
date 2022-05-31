@@ -9,7 +9,7 @@ Standards-Version: 4.3.0
 Vcs-Git: https://salsa.debian.org/debian/tar.git
 Vcs-Browser: https://salsa.debian.org/debian/tar
 Homepage: https://www.gnu.org/software/tar/
-XS-Pexip-Upstream: http://ftp.debian.org/debian/ buster
+XS-Pexip-Upstream: http://deb.debian.org/debian/ bullseye
 
 Package: tar
 Architecture: any
