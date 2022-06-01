@@ -1,7 +1,6 @@
 /* Create a tar archive.
 
-   Copyright 1985, 1992-1994, 1996-1997, 1999-2001, 2003-2007,
-   2009-2010, 2012-2014, 2016-2017 Free Software Foundation, Inc.
+   Copyright 1985-2021 Free Software Foundation, Inc.
 
    This file is part of GNU tar.
 
@@ -518,8 +517,8 @@ start_private_header (const char *name, size_t size, time_t t)
   MODE_TO_CHARS (S_IFREG|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH, header->header.mode);
   UID_TO_CHARS (0, header->header.uid);
   GID_TO_CHARS (0, header->header.gid);
-  strncpy (header->header.magic, TMAGIC, TMAGLEN);
-  strncpy (header->header.version, TVERSION, TVERSLEN);
+  memcpy (header->header.magic, TMAGIC, TMAGLEN);
+  memcpy (header->header.version, TVERSION, TVERSLEN);
   return header;
 }
 
@@ -917,8 +916,8 @@ start_header (struct tar_stat_info *st)
 
     case POSIX_FORMAT:
     case USTAR_FORMAT:
-      strncpy (header->header.magic, TMAGIC, TMAGLEN);
-      strncpy (header->header.version, TVERSION, TVERSLEN);
+      memcpy (header->header.magic, TMAGIC, TMAGLEN);
+      memcpy (header->header.version, TVERSION, TVERSLEN);
       break;
 
     default:
@@ -1349,15 +1348,15 @@ create_archive (void)
 {
   struct name const *p;
 
-  trivial_link_count = name_count <= 1 && ! dereference_option;
+  trivial_link_count = filename_args != FILES_MANY && ! dereference_option;
 
   open_archive (ACCESS_WRITE);
   buffer_write_global_xheader ();
 
   if (incremental_option)
     {
-      size_t buffer_size = 1000;
-      char *buffer = xmalloc (buffer_size);
+      size_t buffer_size = 0;
+      char *buffer = NULL;
       const char *q;
 
       collect_and_sort_names ();
@@ -1372,12 +1371,8 @@ create_archive (void)
 	  {
 	    struct tar_stat_info st;
 	    size_t plen = strlen (p->name);
-	    if (buffer_size <= plen)
-	      {
-		while ((buffer_size *= 2) <= plen)
-		  continue;
-		buffer = xrealloc (buffer, buffer_size);
-	      }
+	    while (buffer_size <= plen)
+	      buffer = x2realloc (buffer, &buffer_size);
 	    memcpy (buffer, p->name, plen);
 	    if (! ISSLASH (buffer[plen - 1]))
 	      buffer[plen++] = DIRECTORY_SEPARATOR;
@@ -1408,12 +1403,8 @@ create_archive (void)
 			    }
 			  st.orig_file_name = xstrdup (p->name);
 			}
-		      if (buffer_size < plen + qlen)
-			{
-			  while ((buffer_size *=2 ) < plen + qlen)
-			    continue;
-			  buffer = xrealloc (buffer, buffer_size);
- 			}
+		      while (buffer_size < plen + qlen)
+			buffer = x2realloc (buffer, &buffer_size);
 		      strcpy (buffer + plen, q + 1);
 		      dump_file (&st, q + 1, buffer);
 		    }

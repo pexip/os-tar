@@ -2,9 +2,9 @@ Source: tar
 Section: utils
 Priority: required
 Maintainer: Pexip AS <packaging@pexip.com>
-XSBC-Pexip-Original-Maintainer: Bdale Garbee <bdale@gag.com>
+XSBC-Pexip-Original-Maintainer: Janos Lenart <ocsi@debian.org>
 XSBC-Pexip-Original-Uploaders: Carl Worth <cworth@cworth.org>
-Build-Depends: debhelper (>> 10), gettext, autoconf, automake, autopoint, libacl1-dev, libattr1-dev, libselinux1-dev [linux-any]
+Build-Depends: debhelper (>> 10), gettext, autoconf, automake, autopoint, bison, libacl1-dev, libselinux1-dev [linux-any]
 Standards-Version: 4.3.0
 Vcs-Git: https://salsa.debian.org/debian/tar.git
 Vcs-Browser: https://salsa.debian.org/debian/tar
@@ -35,4 +35,4 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, tar (>= 1.26+dfsg-9)
 Conflicts: dump, openafs-client, tar (<< 1.26+dfsg-9)
 Description: optional scripts for GNU version of the tar archiving utility
  This package provides the backup, restore, backup.sh, and dump-remind
- scripts that are mentioned in the tar documentation. 
+ scripts that are mentioned in the tar documentation.

@@ -1,7 +1,6 @@
 /* Common declarations for the tar program.
 
-   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2012-2017 Free
-   Software Foundation, Inc.
+   Copyright 1988-2021 Free Software Foundation, Inc.
 
    This file is part of GNU tar.
 
@@ -302,6 +301,10 @@ enum hole_detection_method
 
 GLOBAL enum hole_detection_method hole_detection;
 
+/* The first entry in names.c:namelist specifies the member name to
+   start extracting from. Set by add_starting_file() upon seeing the
+   -K option.
+*/
 GLOBAL bool starting_file_option;
 
 /* Specified maximum byte length of each tape volume (multiple of 1024).  */
@@ -336,6 +339,9 @@ GLOBAL const char *volno_file_option;
 GLOBAL const char *volume_label_option;
 
 /* Other global variables.  */
+
+/* Force POSIX-compliance */
+GLOBAL bool posixly_correct;
 
 /* File descriptor for archive file.  */
 GLOBAL int archive;
@@ -628,6 +634,8 @@ void skip_member (void);
 
 char const *quote_n_colon (int n, char const *arg);
 void assign_string (char **dest, const char *src);
+void assign_string_n (char **string, const char *value, size_t n);
+#define ASSIGN_STRING_N(s,v) assign_string_n (s, v, sizeof (v))
 int unquote_string (char *str);
 char *zap_slashes (char *name);
 char *normalize_filename (int cdidx, const char *name);
@@ -734,7 +742,21 @@ int set_file_atime (int fd, int parentfd, char const *file,
 
 /* Module names.c.  */
 
-extern size_t name_count;
+enum files_count
+  {
+    FILES_NONE,
+    FILES_ONE,
+    FILES_MANY
+  };
+extern enum files_count filename_args;
+
+/* Return true if there are file names in the list */
+static inline bool
+name_more_files (void)
+{
+  return filename_args != FILES_NONE;
+}
+
 extern struct name *gnu_list_name;
 
 void gid_to_gname (gid_t gid, char **gname);
@@ -750,6 +772,7 @@ const char *name_next (int change_dirs);
 void name_gather (void);
 struct name *addname (char const *string, int change_dir,
 		      bool cmdline, struct name *parent);
+void add_starting_file (char const *file_name);
 void remname (struct name *name);
 bool name_match (const char *name);
 void names_notfound (void);
@@ -791,6 +814,8 @@ void set_exit_status (int val);
 
 void request_stdin (const char *option);
 
+int decode_signal (const char *);
+
 /* Where an option comes from: */
 enum option_source
   {
@@ -808,6 +833,24 @@ struct option_locus
   struct option_locus *prev;  /* Previous occurrence of the option of same
 				 class */
 };
+
+struct tar_args        /* Variables used during option parsing */
+{
+  struct option_locus *loc;
+
+  struct textual_date *textual_date; /* Keeps the arguments to --newer-mtime
+					and/or --date option if they are
+					textual dates */
+  bool o_option;                   /* True if -o option was given */
+  bool pax_option;                 /* True if --pax-option was given */
+  bool compress_autodetect;        /* True if compression autodetection should
+				      be attempted when creating archives */
+  char const *backup_suffix_string;   /* --suffix option argument */
+  char const *version_control_string; /* --backup option argument */
+};
+
+#define TAR_ARGS_INITIALIZER(loc)              \
+  { loc, NULL, false, false, false, NULL, NULL }
 
 void more_options (int argc, char **argv, struct option_locus *loc);
 
@@ -829,6 +872,7 @@ void xheader_store (char const *keyword, struct tar_stat_info *st,
 void xheader_read (struct xheader *xhdr, union block *header, off_t size);
 void xheader_write (char type, char *name, time_t t, struct xheader *xhdr);
 void xheader_write_global (struct xheader *xhdr);
+void xheader_forbid_global (void);
 void xheader_finish (struct xheader *hdr);
 void xheader_destroy (struct xheader *hdr);
 char *xheader_xhdr_name (struct tar_stat_info *st);
