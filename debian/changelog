@@ -1,3 +1,12 @@
+tar (1.34+dfsg-1.2+deb12u1) bookworm; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix boundary checking in base-256 decoder (CVE-2022-48303)
+  * Fix handling of extended header prefixes (CVE-2023-39804)
+    (Closes: #1058079)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Sat, 20 Jan 2024 10:27:07 +0100
+
 tar (1.34+dfsg-1.2) unstable; urgency=medium
 
   * Non-maintainer upload.
