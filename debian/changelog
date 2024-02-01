@@ -1,3 +1,9 @@
+tar (1.34+dfsg-1.2+pexip24u3) pexip-bookworm; urgency=medium
+
+  * New versioning scheme
+
+ -- Mark Hymers <mark.hymers@pexip.com>  Thu, 01 Feb 2024 16:37:03 +0000
+
 tar (1.34+dfsg-1.2pexip2) pexip-bookworm; urgency=medium
 
   * Bookworm build for product distribution
